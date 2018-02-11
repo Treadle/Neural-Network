@@ -1,6 +1,9 @@
 # neural-network
-Custom neural network
+The project is currently tailored to the [MNIST](http://yann.lecun.com/exdb/mnist/) dataset of handwritten digits. Logic is separated into three classes, ```Data.py```, ```NeuralNetwork.py```, and ```Trainer.py```. The ```Main.py``` file conducts the interaction between the aforementioned three classes. This project is ongoing. Next steps include
+* writing a better ```README.md``` and
+* makeing the project generalize to work with other datasets.
 
+Sample output: 
 ```
 *******************************
 * INITIALIZING NEURAL NETWORK *
