@@ -26,15 +26,15 @@ class NeuralNetwork(object):
 
     def initializeWeights(self):
         #Initialize input layer weights
-        self.WI = np.random.uniform(0.1, 10**(-20), (self.ils+1,self.hls))
+        self.WI = np.random.randn(self.ils+1,self.hls)*0.01
 
         #Initialize hidden layer weights
         self.W = np.zeros((self.nhl-1,self.hls+1,self.hls))
         for i in range(len(self.W)):
-            self.W[i] = np.random.uniform(0.1, 10**(-20), (self.hls+1,self.hls))
+            self.W[i] = np.random.randn(self.hls+1,self.hls)*0.01
             
         #Initialize output layer weights
-        self.WO = np.random.uniform(0.1, 10**(-20),(self.hls+1,self.ols))
+        self.WO = np.random.randn(self.hls+1,self.ols)*0.01
     
     #Sigmoid activation function
     def sigmoid(self,z):
