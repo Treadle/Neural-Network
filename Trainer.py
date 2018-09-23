@@ -49,6 +49,6 @@ class Trainer(object):
         for j in range(len(xData)):
             X = np.expand_dims(np.insert(xData[j],0,1), axis=0)
             y = yData[j]
-            if self.network.forward(X, y) == yData[j]:
+            if self.network.forward(X, y)[0] == yData[j]:
                 numCorrect += 1
         return round((numCorrect * 100) / len(xData),2)

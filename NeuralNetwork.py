@@ -1,119 +1,180 @@
 import numpy as np
 
 class NeuralNetwork(object):
-    def __init__(self, ils, hls, ols, nhl):
+  def __init__(self, input_layer_size, hidden_layer_size, output_layer_size, number_of_hidden_layers):
+    self.input_layer_size = input_layer_size
+    self.hidden_layer_size = hidden_layer_size
+    self.number_of_hidden_layers = number_of_hidden_layers
+    self.output_layer_size = output_layer_size
+    self.number_of_synapses = input_layer_size * hidden_layer_size \
+      + hidden_layer_size * (number_of_hidden_layers - 1) \
+      + hidden_layer_size * output_layer_size
 
-        #Parameters
-        self.ils = ils #input layer size
-        self.hls = hls #hidden layer size
-        self.nhl = nhl #number of hidden layers
-        self.ols = ols #output layer size
+    self.displayInitialization()
+    self.initializeWeights()
 
-        self.batchSize = 0
-        self.error = 0
+  def displayInitialization(self):
+    print("*******************************")
+    print("* INITIALIZING NEURAL NETWORK *")
+    print("*******************************")
+    print("Input layer size:", self.input_layer_size)
+    print("Hidden layer size:", self.hidden_layer_size)
+    print("Output layer size:", self.output_layer_size)
+    print("Number of hidden layers:", self.number_of_hidden_layers)
+    print("Total number of synapses:", self.number_of_synapses)
+    print()
 
-        self.displayInitialization()
-        self.initializeWeights()
+  def initializeWeights(self):
+    self.input_layer_weights = np.random.randn(
+      self.input_layer_size + 1,
+      self.hidden_layer_size
+    ) * 0.01
 
-    def displayInitialization(self):
-        print("*******************************")
-        print("* INITIALIZING NEURAL NETWORK *")
-        print("*******************************")
-        print("Input layer size:", self.ils)
-        print("Hidden layer size:", self.hls)
-        print("Output layer size:", self.ols)
-        print("Number of hidden layers:", self.nhl)
+    self.hidden_layer_weights = np.zeros((
+      self.number_of_hidden_layers - 1,
+      self.hidden_layer_size + 1,
+      self.hidden_layer_size
+    ))
+    for layer in self.hidden_layer_weights:
+      layer = np.random.randn(
+        self.hidden_layer_size + 1,
+        self.hidden_layer_size
+      ) * 0.01
 
-    def initializeWeights(self):
-        #Initialize input layer weights
-        self.WI = np.random.randn(self.ils+1,self.hls)*0.01
+    self.output_layer_weights = np.random.randn(
+      self.hidden_layer_size + 1,
+      self.output_layer_size
+    ) * 0.01
 
-        #Initialize hidden layer weights
-        self.W = np.zeros((self.nhl-1,self.hls+1,self.hls))
-        for i in range(len(self.W)):
-            self.W[i] = np.random.randn(self.hls+1,self.hls)*0.01
-            
-        #Initialize output layer weights
-        self.WO = np.random.randn(self.hls+1,self.ols)*0.01
-    
-    #Sigmoid activation function
-    def sigmoid(self,z):
-        return 1/(1+np.exp(-z))
+  def sigmoid(self, z):
+    return 1 / (1 + np.exp(-z))
 
-    def forward(self, X, y=[0,0,0,0,0,0,0,0,0,0]):
-        #Initialize data structures to store output from hidden layer (B)
-        #and output layer (BO) neurons. Also, determine the batch size
-        #based on outer dimension of input matrix.
-        self.batchSize = len(X)
-        self.B = np.zeros((self.nhl,self.batchSize,self.hls+1))
-        self.BO = np.zeros((self.batchSize,self.ols))
+  def forward(self, X, y=[0,0,0,0,0,0,0,0,0,0]):
+    # Initialize hidden and output layer outputs
+    self.batch_size = len(X)
 
-        #Propagate input matrix (or vector) X through the network
-        self.B[0] = np.c_[np.ones(self.batchSize), self.sigmoid(np.dot(X, self.WI))]
-        for i in range(self.nhl-1):
-            self.B[i+1] = np.c_[np.ones(self.batchSize), self.sigmoid(np.dot(self.B[i], self.W[i]))]
-        self.BO = self.sigmoid(np.dot(self.B[len(self.B)-1], self.WO))
+    self.hidden_layer_outputs = np.zeros((
+      self.number_of_hidden_layers,
+      self.batch_size,
+      self.hidden_layer_size + 1
+    ))
+    self.output_layer_outputs = np.zeros((
+      self.batch_size,
+      self.output_layer_size
+    ))
 
-        #Use least squares error formula
-        self.error = (.5)*np.sum(np.square(y-self.BO))
-        
-        return self.pickMax()
-        
-    def backprop(self, X, y, LR=0.02):
-        #Initialize data structures for hidden layer (D)
-        #and output layer (DO) deltas
-        self.D = np.zeros((self.nhl, self.batchSize, self.hls))
-        self.DO = np.zeros((self.batchSize,self.ols))
-        
-        #Calculate deltas for output layer neurons
-        self.DO = np.multiply((self.BO - y), np.multiply(self.BO, np.subtract(1, self.BO)))
-        
-        #Calculate deltas for hidden layer neurons
-        for i in range(self.nhl-1,-1,-1):
-            if i == self.nhl-1:
-                a = np.dot(self.DO, np.transpose(self.WO[1:,:]))
-                b = np.multiply(self.B[i], np.subtract(1, self.B[i]))[:,1:]
-                self.D[i] = np.multiply(a,b)
-            else:
-                a = np.dot(self.D[i+1], np.transpose(self.W[i][1:,:]))
-                b = np.multiply(self.B[i], np.subtract(1, self.B[i]))[:,1:]
-                self.D[i] = np.multiply(a,b)
-        
-        #Apply weight adjustments
-        self.WI -= LR*np.dot(np.transpose(X), self.D[0])
-        for i in range(self.nhl-1):
-            self.W[i] -= LR*np.dot(np.transpose(self.B[i]), self.D[i+1])
-        self.WO -= LR*np.dot(np.transpose(self.B[self.nhl-1]), self.DO)
-    
-    def pickMax(self):
-        maxVal = 0
-        maxIndex = 0
-        for x in range(len(self.BO[0])):
-            if self.BO[0][x] > maxVal:
-                maxVal = self.BO[0][x]
-                maxIndex = x
-        return maxIndex
-    
-    def saveBrain(self, tag = ""):
-        """
-        Save the network's weights which constitute its brain. Pass in
-        a number to uniquely identify this brain from others.
-        """
-        try:
-            np.savez("brain"+str(tag), WI=self.WI, W=self.W, WO=self.WO)
-            print("Successfully saved", "brain"+str(tag)+".npz")
-        except:
-            print("Failed to save", "brain"+str(tag)+".npz")
-            
-    def loadBrain(self, tag = ""):
-        """
-        Load a formerly saved set of network weights.
-        """
-        try:
-            weights = np.load("brain"+str(tag)+".npz")
-            self.WI = weights["WI"]
-            self.W  = weights["W"]
-            self.WO = weights["WO"]
-            print("Successfully loaded", "brain"+str(tag)+".npz")
-        except:
-            print("Failed to load", "brain"+str(tag)+".npz")
+    # Forward propagate
+    self.hidden_layer_outputs[0] = np.c_[
+      np.ones(self.batch_size),
+      self.sigmoid(
+        np.dot(
+          X,
+          self.input_layer_weights
+        )
+      )
+    ]
+
+    for layer in range(self.number_of_hidden_layers - 1):
+      self.hidden_layer_outputs[layer + 1] = np.c_[
+        np.ones(self.batch_size),
+        self.sigmoid(
+          np.dot(
+            self.hidden_layer_outputs[layer],
+            self.hidden_layer_weights[layer]
+          )
+        )
+      ]
+
+    self.output_layer_outputs = self.sigmoid(
+      np.dot(
+        self.hidden_layer_outputs[-1],
+        self.output_layer_weights
+      )
+    )
+
+    # Least squares error
+    self.error = (0.5) * np.sum(np.square(y - self.output_layer_outputs))
+
+    return self.pickMax()
+
+  def backprop(self, X, y, learning_rate = 0.02):
+    # Initialize deltas
+    self.hidden_layer_deltas = np.zeros((
+      self.number_of_hidden_layers,
+      self.batch_size,
+      self.hidden_layer_size
+    ))
+    self.output_layer_deltas = np.zeros((
+      self.batch_size,
+      self.output_layer_size
+    ))
+
+    # Calculate deltas
+    self.output_layer_deltas = np.multiply(
+      self.output_layer_outputs - y,
+      np.multiply(
+        self.output_layer_outputs,
+        np.subtract(1, self.output_layer_outputs)
+      )
+    )
+
+    for layer in range(self.number_of_hidden_layers-1, -1, -1):
+      self.hidden_layer_deltas[layer] = np.multiply(
+        np.dot(
+          self.output_layer_deltas,
+          np.transpose(self.output_layer_weights[1:, :])
+        )
+        if layer == self.number_of_hidden_layers - 1 else 
+        np.dot(
+          self.hidden_layer_deltas[layer + 1],
+          np.transpose(self.hidden_layer_weights[layer][1:, :])
+        ),
+        np.multiply(
+          self.hidden_layer_outputs[layer],
+          np.subtract(1, self.hidden_layer_outputs[layer])
+        )[:, 1:]
+      )
+
+    # Apply updates
+    self.input_layer_weights -= learning_rate * np.dot(
+      np.transpose(X),
+      self.hidden_layer_deltas[0]
+    )
+
+    for layer in range(self.number_of_hidden_layers - 1):
+      self.hidden_layer_weights[layer] -= learning_rate * np.dot(
+        np.transpose(self.hidden_layer_outputs[layer]),
+        self.hidden_layer_deltas[layer + 1]
+      )
+
+    self.output_layer_weights -= learning_rate * np.dot(
+      np.transpose(self.hidden_layer_outputs[self.number_of_hidden_layers - 1]),
+      self.output_layer_deltas
+    )
+
+  def pickMax(self):
+    return np.fromiter(
+      map(lambda output : output.argmax(), self.output_layer_outputs),
+      dtype=np.int
+    )
+  
+  def saveBrain(self, tag = ""):
+    try:
+      np.savez(
+        "brain"+str(tag),
+        WI = self.input_layer_weights,
+        W = self.hidden_layer_weights,
+        WO = self.output_layer_weights)
+      print("Successfully saved brain" + str(tag) + ".npz")
+    except:
+      print("Failed to save brain" + str(tag) + ".npz")
+          
+  def loadBrain(self, tag = ""):
+    try:
+      weights = np.load("brain" + str(tag) + ".npz")
+      self.input_layer_weights = weights["WI"]
+      self.hidden_layer_weights  = weights["W"]
+      self.output_layer_weights = weights["WO"]
+      print("Successfully loaded brain" + str(tag) + ".npz")
+    except:
+      print("Failed to load brain" + str(tag) + ".npz")
