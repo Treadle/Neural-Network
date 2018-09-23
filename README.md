@@ -5,6 +5,14 @@ The project is currently tailored to the [MNIST](http://yann.lecun.com/exdb/mnis
 
 Sample output: 
 ```
+INITIALIZING DATA
+Importing training data...
+Importing testing data...
+Normalizing data
+Successfully loaded normalizedData.npz
+Converting target data to one-hot encoding...
+DATA INITIALIZATION COMPLETE
+
 *******************************
 * INITIALIZING NEURAL NETWORK *
 *******************************
@@ -12,25 +20,27 @@ Input layer size: 784
 Hidden layer size: 128
 Output layer size: 10
 Number of hidden layers: 2
+Total number of synapses: 101760
+
 ***************************
 * TRAINING NEURAL NETWORK *
 ***************************
 Epochs: 12
-Iterations per epoch: 1875
-Batch size: 32
+Iterations per epoch: 937
+Batch size: 64
 Learning rate: 0.02
 
 epoch    training        testing
-0        20.2%           20.15%
-1        29.13%          29.51%
-2        85.52%          85.36%
-3        91.8%           91.58%
-4        93.79%          93.28%
-5        94.91%          94.17%
-6        95.4%           94.3%
-7        96.16%          94.97%
-8        96.58%          95.48%
-9        96.94%          95.6%
-10       97.39%          95.85%
-11       97.57%          95.88%
+0        15.23%          16.26%
+1        74.31%          74.51%
+2        89.61%          89.5%
+3        92.39%          92.1%
+4        94.06%          93.54%
+5        95.15%          94.51%
+6        95.83%          95.17%
+7        96.41%          95.41%
+8        96.85%          95.69%
+9        97.29%          95.92%
+10       97.56%          96.13%
+11       97.88%          96.25%
 ```
