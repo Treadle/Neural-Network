@@ -1,7 +1,7 @@
 # neural-network
-The project is currently tailored to the [MNIST](http://yann.lecun.com/exdb/mnist/) dataset of handwritten digits. Logic is separated into three classes, ```Data.py```, ```NeuralNetwork.py```, and ```Trainer.py```. The ```Main.py``` file conducts the interaction between the aforementioned three classes. This project is ongoing. Next steps include
-* writing a better ```README.md``` and
-* making the project generalize to work with other datasets.
+This was my final project for Introduction to Machine Learning at the University of Vermont. I wanted to prove to myself that I thoroughly understood the calculus and linear algebra underlying neural networks (and especially backpropagation) so I implemented this from scratch. This may be a good resource if you are trying to do the same.
+
+The project is tailored to the [MNIST](http://yann.lecun.com/exdb/mnist/) dataset of handwritten digits. Logic is separated into three classes, ```Data.py```, ```NeuralNetwork.py```, and ```Trainer.py```. The ```Main.py``` file conducts the interaction between the aforementioned three classes.
 
 Sample output: 
 ```
